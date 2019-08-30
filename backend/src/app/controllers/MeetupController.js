@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import { parse, startOfDay, endOfDay } from 'date-fns';
 import Meetup from '../models/Meetup';
 import User from '../models/User';
+import File from '../models/File';
 
 class MeetupController {
   async index(req, res) {
@@ -17,7 +18,7 @@ class MeetupController {
     }
     const meetups = await Meetup.findAll({
       where,
-      include: [User],
+      include: [{ model: File, as: 'file' }, { model: User, as: 'user' }],
       limit: 10,
       offset,
     });
@@ -69,7 +70,7 @@ class MeetupController {
     }
 
     const { id } = req.params;
-    const meetup = await Meetup.findByPk(id);
+    const meetup = await Meetup.findByPk(id, { include: [{ all: true }] });
     if (!meetup) {
       return res
         .status(400)
