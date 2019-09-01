@@ -6,21 +6,23 @@ class UserController {
     const schema = Yup.object().shape({
       name: Yup.string().required(),
       email: Yup.string()
-        .email()
-        .required(),
+        .email('Deve utilizar um e-mail válido')
+        .required('Email é obrigatório'),
       password: Yup.string()
-        .required()
-        .min(6),
+        .required('Senha é obrigatória')
+        .min(6, 'Senha deve conter no mínimo 6 caracteres'),
     });
 
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation fails' });
+    try {
+      await schema.validate(req.body);
+    } catch ({ message }) {
+      return res.status(400).json({ error: message });
     }
 
     const userExists = await User.findOne({ where: { email: req.body.email } });
 
     if (userExists) {
-      return res.status(400).json({ error: 'User already exists.' });
+      return res.status(400).json({ error: 'Usuário já existe.' });
     }
 
     const { id, name, email } = await User.create(req.body);
@@ -35,20 +37,25 @@ class UserController {
   async update(req, res) {
     const schema = Yup.object().shape({
       name: Yup.string(),
-      email: Yup.string().email(),
-      oldPassword: Yup.string().min(6),
+      email: Yup.string().email('Deve utilizar um e-mail válido'),
+      oldPassword: Yup.string().min(
+        6,
+        'Senha deve conter no mínimo 6 caracteres'
+      ),
       password: Yup.string()
-        .min(6)
+        .min(6, 'Senha deve conter no mínimo 6 caracteres')
         .when('oldPassword', (oldPassword, field) =>
-          oldPassword ? field.required() : field
+          oldPassword ? field.required('Nova senha deve ser preenchida') : field
         ),
       confirmPassword: Yup.string().when('password', (password, field) =>
         password ? field.required().oneOf([Yup.ref('password')]) : field
       ),
     });
 
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation fails' });
+    try {
+      await schema.validate(req.body);
+    } catch ({ message }) {
+      return res.status(400).json({ error: message });
     }
 
     const { email, oldPassword } = req.body;

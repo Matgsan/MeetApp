@@ -1,11 +1,13 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch, useSelector } from 'react-redux';
+import { Alert } from 'react-native';
+import PropTypes from 'prop-types';
+import * as Yup from 'yup';
 import Background from '~/components/Background';
 import Header from '~/components/Header';
 import {
   Container,
-  Title,
   Separator,
   Form,
   FormInput,
@@ -34,20 +36,50 @@ export default function Profile() {
     setConfirmPassword('');
   }, [profile]);
 
-  function handleSubmit() {
-    dispatch(
-      updateProfileRequest({
+  const schema = Yup.object().shape({
+    name: Yup.string(),
+    email: Yup.string().email(),
+    oldPassword: Yup.string().min(
+      6,
+      'Senha deve conter no mínimo 6 caracteres'
+    ),
+    password: Yup.string()
+      .min(6, 'Nova senha deve conter no mínimo 6 caracteres')
+      .when('oldPassword', (value, field) =>
+        value ? field.required('Nova senha deve ser preenchida') : field
+      ),
+    confirmPassword: Yup.string().when('password', (value, field) =>
+      value
+        ? field.required().oneOf([Yup.ref('password')], 'Senhas não coincidem')
+        : field
+    ),
+  });
+  async function handleSubmit() {
+    try {
+      await schema.validate({
         name,
         email,
         oldPassword,
         password,
         confirmPassword,
-      })
-    );
+      });
+      dispatch(
+        updateProfileRequest({
+          name,
+          email,
+          oldPassword,
+          password,
+          confirmPassword,
+        })
+      );
+    } catch ({ message }) {
+      Alert.alert('Erro', message);
+    }
   }
   function handleLogout() {
     dispatch(signOut());
   }
+
   return (
     <Background>
       <Header />
@@ -106,10 +138,14 @@ export default function Profile() {
     </Background>
   );
 }
+function TabBarIcon({ tintColor }) {
+  return <Icon name="person" size={20} color={tintColor} />;
+}
+TabBarIcon.propTypes = {
+  tintColor: PropTypes.string.isRequired,
+};
 
 Profile.navigationOptions = {
   tabBarLabel: 'Meu perfil',
-  tabBarIcon: ({ tintColor }) => (
-    <Icon name="person" size={20} color={tintColor} />
-  ),
+  tabBarIcon: TabBarIcon,
 };

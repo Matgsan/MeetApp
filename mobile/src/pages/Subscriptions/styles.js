@@ -18,7 +18,6 @@ export const DateText = styled.Text`
 export const List = styled.FlatList.attrs({
   contentContainerStyle: {
     padding: 20,
-    paddingTop: 0,
   },
   onEndReachedThreshold: 0.3,
   showsVerticalScrollIndicator: false,

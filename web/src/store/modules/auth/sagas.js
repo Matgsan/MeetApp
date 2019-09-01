@@ -15,7 +15,11 @@ export function* signIn({ payload }) {
     yield put(signInSuccess(token, user));
     history.push('/dashboard');
   } catch (err) {
-    toast.error('Falha na autenticação, verifique seus dados.');
+    const errorMessage =
+      err.response && err.response.data && err.response.data.error
+        ? err.response.data.error
+        : 'Falha na autenticação, verifique seus dados.';
+    toast.error(errorMessage);
     yield put(signFailure());
   }
 }
@@ -31,7 +35,11 @@ export function* signUp({ payload }) {
 
     history.push('/');
   } catch (err) {
-    toast.error('Falha na cadastro, verifique seus dados.');
+    const errorMessage =
+      err.response && err.response.data && err.response.data.error
+        ? err.response.data.error
+        : 'Falha na cadastro, verifique seus dados.';
+    toast.error(errorMessage);
     yield put(signFailure());
   }
 }

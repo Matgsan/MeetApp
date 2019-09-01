@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import { Form, Input } from '@rocketseat/unform';
 import { MdAddCircleOutline } from 'react-icons/md';
@@ -21,6 +22,17 @@ export default function MeetupEditor({ location }) {
     }
     return null;
   }, [meetup]);
+
+  const schema = Yup.object().shape({
+    title: Yup.string().required('Titulo é obrigatório'),
+    description: Yup.string().required('Descrição é obrigatória'),
+    location: Yup.string().required('Localização é obrigatória'),
+    date: Yup.date()
+      .required('Data é obrigatória')
+      .min(new Date().toISOString(), 'Data não pode ser uma data passada'),
+    file_id: Yup.number().required('Arquivo é obrigatório'),
+  });
+
   async function handleSubmit(data) {
     try {
       if (meetup) {
@@ -46,8 +58,8 @@ export default function MeetupEditor({ location }) {
 
   return (
     <Container>
-      <Form initialData={meetup} onSubmit={handleSubmit}>
-        <BannerInput name="file" />
+      <Form schema={schema} initialData={meetup} onSubmit={handleSubmit}>
+        <BannerInput name="file_id" />
         <Input name="title" placeholder="Titulo do Meetup" />
         <Input name="description" multiline placeholder="Descrição completa" />
         <DatePickerInput name="date" defaultValue={meetupDate} />

@@ -16,7 +16,11 @@ export function* updateProfile({ payload }) {
     toast.success('Perfil atualizado com sucesso');
     yield put(updateProfileSuccess(response.data));
   } catch (err) {
-    toast.error('Erro ao atualizar o perfil, confira o seus dados');
+    const errorMessage =
+      err.response && err.response.data && err.response.data.error
+        ? err.response.data.error
+        : 'Erro ao atualizar o perfil, verifique seus dados.';
+    toast.error(errorMessage);
     yield put(updateProfileFailure());
   }
 }

@@ -17,7 +17,9 @@ export function* updateProfile({ payload }) {
   } catch (err) {
     Alert.alert(
       'Falha na atualização',
-      'Houve um erro na atualização do seu perfil confira o seus dados'
+      err.response && err.response.data && err.response.data.error
+        ? err.response.data.error
+        : 'Houve um erro na atualização, verifique seus dados.'
     );
     yield put(updateProfileFailure());
   }

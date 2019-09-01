@@ -5,6 +5,7 @@ import Subscription from '../models/Subscription';
 import SubscriptionMail from '../jobs/SubscriptionMail';
 import Queue from '../../lib/Queue';
 import User from '../models/User';
+import File from '../models/File';
 
 class SubscriptionController {
   async index(req, res) {
@@ -15,13 +16,24 @@ class SubscriptionController {
       include: [
         {
           model: Meetup,
+          as: 'meetup',
           required: true,
           where: {
             date: { [Op.gt]: new Date() },
           },
+          include: [
+            {
+              model: User,
+              as: 'user',
+            },
+            {
+              model: File,
+              as: 'file',
+            },
+          ],
         },
       ],
-      order: [[Meetup, 'date']],
+      order: [[{ model: Meetup, as: 'meetup' }, 'date']],
     });
     return res.json(subscriptions);
   }
@@ -34,25 +46,26 @@ class SubscriptionController {
       include: [
         {
           model: User,
+          as: 'user',
         },
       ],
     });
     if (!meetup) {
       return res
         .status(400)
-        .json({ error: 'No Meetup found with the provided id' });
+        .json({ error: 'Nenhum Meetup encontrado com esse id' });
     }
 
     if (meetup.user_id === req.userId) {
-      return res
-        .status(401)
-        .json({ error: 'You cannot subscribe to a meetup that you organize' });
+      return res.status(401).json({
+        error: 'Você não pode se inscrever em um Meetup que organiza',
+      });
     }
 
     if (meetup.past) {
-      return res
-        .status(400)
-        .json({ error: 'You cannot subscribe to past meetups' });
+      return res.status(400).json({
+        error: 'Você não pode se inscrever em Meetups que já aconteceram',
+      });
     }
     const check = await Subscription.findOne({
       where: {
@@ -61,6 +74,7 @@ class SubscriptionController {
       include: [
         {
           model: Meetup,
+          as: 'meetup',
           required: true,
           where: {
             [Op.or]: [
@@ -78,14 +92,13 @@ class SubscriptionController {
     if (check) {
       if (check.meetup_id === meetup.id) {
         return res.status(400).json({
-          error: 'You are already subscribed to this Meetup',
+          error: 'Você já está inscrito nesse Meetup',
         });
       }
       const checkMeetup = check.Meetup;
       if (isSameHour(parse(checkMeetup.date), parse(meetup.date))) {
         return res.status(400).json({
-          error:
-            'You are already subscribed to another Meetup in the same hour',
+          error: 'Você já está inscrito em um Meetup no mesmo horário',
         });
       }
     }
@@ -100,6 +113,24 @@ class SubscriptionController {
       user,
     });
     return res.json(subscription);
+  }
+
+  async delete(req, res) {
+    const { id } = req.params;
+    const subscription = await Subscription.findByPk(id);
+    if (!subscription) {
+      return res
+        .status(400)
+        .json({ error: 'Nenhuma inscrição encontrada com esse id' });
+    }
+    if (subscription.past) {
+      return res.status(401).json({
+        error:
+          'Você não pode cancelar uma inscricão de um Meetup que já ocorreu',
+      });
+    }
+    await subscription.destroy();
+    return res.send();
   }
 }
 

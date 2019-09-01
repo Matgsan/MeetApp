@@ -27,19 +27,19 @@ class MeetupController {
 
   async store(req, res) {
     const schema = Yup.object().shape({
-      title: Yup.string().required('Title is required'),
-      description: Yup.string().required('Description is required'),
-      location: Yup.string().required('Location is required'),
+      title: Yup.string().required('Titulo é obrigatório'),
+      description: Yup.string().required('Descrição é obrigatória'),
+      location: Yup.string().required('Localização é obrigatória'),
       date: Yup.date()
-        .required('Date is required')
-        .min(new Date().toISOString(), 'Date cannot be a past date'),
-      file_id: Yup.number().required('File is required'),
+        .required('Data é obrigatória')
+        .min(new Date().toISOString(), 'Data não pode ser uma data passada'),
+      file_id: Yup.number().required('Arquivo é obrigatório'),
     });
 
     try {
       await schema.validate(req.body);
     } catch ({ message }) {
-      return res.status(400).json({ message });
+      return res.status(400).json({ error: message });
     }
 
     const user_id = req.userId;
@@ -59,14 +59,14 @@ class MeetupController {
       location: Yup.string(),
       date: Yup.date().min(
         new Date().toISOString(),
-        'Date cannot be a past date'
+        'Data não pode ser uma data passada'
       ),
       file_id: Yup.number(),
     });
     try {
       await schema.validate(req.body);
     } catch ({ message }) {
-      return res.status(400).json({ message });
+      return res.status(400).json({ error: message });
     }
 
     const { id } = req.params;
@@ -74,16 +74,16 @@ class MeetupController {
     if (!meetup) {
       return res
         .status(400)
-        .json({ error: 'No Meetup found with the provided id' });
+        .json({ error: 'Nenhum Meetup encontrado com esse id' });
     }
     if (meetup.user_id !== req.userId) {
       return res
         .status(401)
-        .json({ error: 'You are not the organizer of this meetup' });
+        .json({ error: 'Você não é o organizador desse Meetup' });
     }
     if (meetup.past) {
       return res.status(401).json({
-        error: 'You cannot edit a meetup that already occured',
+        error: 'Você não pode editar um Meetup que já ocorreu',
       });
     }
     await meetup.update(req.body);
@@ -96,16 +96,16 @@ class MeetupController {
     if (!meetup) {
       return res
         .status(400)
-        .json({ error: 'No Meetup found with the provided id' });
+        .json({ error: 'Nenhum Meetup encontrado com esse id' });
     }
     if (meetup.user_id !== req.userId) {
       return res
         .status(401)
-        .json({ error: 'You are not the organizer of this meetup' });
+        .json({ error: 'Você não é o organizador desse Meetup' });
     }
     if (meetup.past) {
       return res.status(401).json({
-        error: 'You cannot cancel a meetup that already occured',
+        error: 'Você não pode deletar um Meetup que já ocorreu',
       });
     }
     await meetup.destroy();

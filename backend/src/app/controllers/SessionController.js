@@ -8,13 +8,15 @@ class SessionController {
   async store(req, res) {
     const schema = Yup.object().shape({
       email: Yup.string()
-        .email()
-        .required(),
-      password: Yup.string().required(),
+        .email('Deve utilizar um e-mail válido')
+        .required('Email é obrigatório'),
+      password: Yup.string().required('Senha é obrigatória'),
     });
 
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation fails' });
+    try {
+      await schema.validate(req.body);
+    } catch ({ message }) {
+      return res.status(400).json({ error: message });
     }
 
     const { email, password } = req.body;
@@ -22,11 +24,11 @@ class SessionController {
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return res.status(401).json({ error: 'User not found' });
+      return res.status(401).json({ error: 'Usuário não encontrado' });
     }
 
     if (!(await user.checkPassword(password))) {
-      return res.status(401).json({ error: 'Password does not match' });
+      return res.status(401).json({ error: 'Senha incorreta' });
     }
 
     const { id, name } = user;

@@ -72,6 +72,7 @@ export const Content = styled.div`
     height: 300px;
   }
   p {
+    display: block;
     margin-top: 25px;
     color: #ffff;
     line-height: 32px;

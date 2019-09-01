@@ -1,6 +1,7 @@
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { Alert } from 'react-native';
 import api from '~/services/api';
+import NavigationService from '~/services/NavigationService';
 import { signInSuccess, signFailure } from './actions';
 
 export function* signIn({ payload }) {
@@ -9,16 +10,14 @@ export function* signIn({ payload }) {
     const response = yield call(api.post, '/sessions', { email, password });
 
     const { user, token } = response.data;
-    if (user.provider) {
-      Alert.alert('Erro no login', 'Usuário não pode ser prestador de serviço');
-      return;
-    }
     api.defaults.headers.Authorization = `Bearer ${token}`;
     yield put(signInSuccess(token, user));
   } catch (err) {
     Alert.alert(
       'Falha na autenticação',
-      'Houve um erro no login, verifique seus dados.'
+      err.response && err.response.data && err.response.data.error
+        ? err.response.data.error
+        : 'Houve um erro no login, verifique seus dados.'
     );
     yield put(signFailure());
   }
@@ -31,10 +30,14 @@ export function* signUp({ payload }) {
       email,
       password,
     });
+    NavigationService.navigate('SignIn');
   } catch (err) {
+    console.tron.log(err);
     Alert.alert(
       'Falha no cadastro',
-      'Houve um erro no cadastro, verifique seus dados.'
+      err.response && err.response.data && err.response.data.error
+        ? err.response.data.error
+        : 'Houve um erro no cadastro, verifique seus dados.'
     );
     yield put(signFailure());
   }

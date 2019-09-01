@@ -59,5 +59,6 @@ routes.delete('/meetups/:id', MeetupController.delete);
 routes.use('/subscriptions', authMiddleware);
 routes.get('/subscriptions', SubscriptionController.index);
 routes.post('/subscriptions/:id', SubscriptionController.store);
+routes.delete('/subscriptions/:id', SubscriptionController.delete);
 
 export default routes;

@@ -18,6 +18,6 @@ Detail.propTypes = {
   style: PropTypes.arrayOf(PropTypes.shape()),
 };
 Detail.defaultProps = {
-  icon: null,
+  icon: false,
   style: [],
 };
