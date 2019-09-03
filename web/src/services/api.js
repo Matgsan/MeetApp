@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://api.meetapp.matgsan.me',
+  baseURL: 'https://api.meetapp.matgsan.dev',
 });
 
 export default api;
