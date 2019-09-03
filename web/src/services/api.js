@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://api.meetapp.matgsan.dev',
+  baseURL: 'https://matgsan-meetapp-backend.herokuapp.com',
 });
 
 export default api;
